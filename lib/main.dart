@@ -32,12 +32,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final MY_NAME = "Victor-Flutter: ";
+  String author = "";
+  TextEditingController _authorcontroller = new TextEditingController(text: "default_name");
   final TextEditingController _controller = TextEditingController();
   final _channel = WebSocketChannel.connect(
     Uri.parse('ws://10.0.2.2:3000/'),
   );
   List<String> chat = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            renderSetUsernameButton(),
             Form(
               child: TextFormField(
                 controller: _controller,
@@ -86,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
-      _channel.sink.add(MY_NAME + _controller.text);
+      _channel.sink.add(author + _controller.text);
     }
   }
 
@@ -95,5 +102,36 @@ class _MyHomePageState extends State<MyHomePage> {
     _channel.sink.close();
     _controller.dispose();
     super.dispose();
+  }
+
+  Widget renderSetUsernameButton() {
+    return ElevatedButton(
+        onPressed: () {
+          showDialog(context: context, builder: (context) => AlertDialog(
+            title: Text('Alert Dialoge opened'),
+            content: Column(
+              children: <Widget>[
+                new TextField(
+                  controller: _authorcontroller,
+                ),
+                new RaisedButton(
+                  onPressed: () {
+                    _authorcontroller.clear();
+                  },
+                  child: new Text('CLEAR'),
+                ),
+                new RaisedButton(
+                  onPressed: () {
+                    author = _authorcontroller.text;
+                    Navigator.pop(context, true);
+                  },
+                  child: new Text('SAVE'),
+                ),
+              ],
+            ),
+          ));
+        },
+        child: Text("set Username")
+    );
   }
 }
