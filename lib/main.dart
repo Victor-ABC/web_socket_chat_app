@@ -151,12 +151,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<String> getJoke() async {
     var response =
         await http.get(Uri.https('api.chucknorris.io', '/jokes/random'));
-    print("1");
     final body = json.decode(response.body);
-    print("X.value: " + body.toString());
-    print("2");
     Joke joke = Joke.fromJson(body);
-    print("3");
     return joke.value;
   }
 }
