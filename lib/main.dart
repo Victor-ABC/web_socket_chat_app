@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'message.dart';
@@ -32,8 +33,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String joke = "";
   String author = "";
-  TextEditingController _authorcontroller = new TextEditingController(text: "default_name");
+  TextEditingController _authorcontroller =
+      new TextEditingController(text: "default_name");
   final TextEditingController _controller = TextEditingController();
   final _channel = WebSocketChannel.connect(
     Uri.parse('ws://10.0.2.2:3000/'),
@@ -56,6 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            renderJoke(),
             renderSetUsernameButton(),
             Form(
               child: TextFormField(
@@ -108,30 +112,49 @@ class _MyHomePageState extends State<MyHomePage> {
     return ElevatedButton(
         onPressed: () {
           showDialog(context: context, builder: (context) => AlertDialog(
-            title: Text('Alert Dialoge opened'),
-            content: Column(
-              children: <Widget>[
-                new TextField(
-                  controller: _authorcontroller,
-                ),
-                new RaisedButton(
-                  onPressed: () {
-                    _authorcontroller.clear();
-                  },
-                  child: new Text('CLEAR'),
-                ),
+            title: Text('Username auswählen'),
+                    content: Column(
+                      children: <Widget>[
+                        new TextField(
+                          controller: _authorcontroller,
+                        ),
+                        new RaisedButton(
+                          onPressed: () {
+                            _authorcontroller.clear();
+                          },
+                          child: new Text('CLEAR'),
+                        ),
                 new RaisedButton(
                   onPressed: () {
                     author = _authorcontroller.text;
                     Navigator.pop(context, true);
-                  },
-                  child: new Text('SAVE'),
-                ),
-              ],
-            ),
-          ));
+                          },
+                          child: new Text('SAVE'),
+                        ),
+                      ],
+                    ),
+                  ));
         },
-        child: Text("set Username")
+        child: Text("set Username"));
+  }
+
+  Widget renderJoke() {
+    return DefaultTextStyle(
+      style: Theme.of(context).textTheme.headline2!,
+      textAlign: TextAlign.center,
+      child: FutureBuilder<String>(
+        future: _getJoke(), // a previously-obtained Future<String> or null
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          return Text(this.joke);
+        },
+      ),
     );
+  }
+
+  Future<String> _getJoke() async {
+    var response =
+        await http.get(Uri.https('jsonplaceholder.typicode.com', '/users'));
+    this.joke = response.body;
+    return response.body;
   }
 }
