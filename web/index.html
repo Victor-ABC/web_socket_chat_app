@@ -100,5 +100,19 @@
       loadMainDartJs();
     }
   </script>
+  <input id="message" type="text">
+  <button onclick="sendMessage()">Senden</button>
+  <div id="messages"></div>
+  <script>
+let webSocket = new WebSocket('ws://localhost:8080');
+webSocket.onmessage = (event) => {
+let element = document.createElement('p');
+element.innerHTML = event.data;
+document.getElementById('messages').appendChild(element);
+};
+function sendMessage() {
+webSocket.send(document.getElementById('message').value);
+}
+</script>
 </body>
 </html>
