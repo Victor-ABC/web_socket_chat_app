@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_sockets/joke.dart';
 
 import 'message.dart';
+
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -33,10 +38,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String joke = "";
   String author = "";
   TextEditingController _authorcontroller =
-      new TextEditingController(text: "default_name");
+  new TextEditingController(text: "default_name");
   final TextEditingController _controller = TextEditingController();
   final _channel = WebSocketChannel.connect(
     Uri.parse('ws://10.0.2.2:3000/'),
@@ -59,7 +63,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            renderJoke(),
             renderSetUsernameButton(),
             Form(
               child: TextFormField(
@@ -113,24 +116,31 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           showDialog(context: context, builder: (context) => AlertDialog(
             title: Text('Username auswählen'),
-                    content: Column(
-                      children: <Widget>[
-                        new TextField(
-                          controller: _authorcontroller,
-                        ),
-                        new RaisedButton(
-                          onPressed: () {
-                            _authorcontroller.clear();
+            content: Column(
+              children: <Widget>[
+                new TextField(
+                  controller: _authorcontroller,
+                ),
+                new RaisedButton(
+                  onPressed: () {
+                    _authorcontroller.clear();
                           },
                           child: new Text('CLEAR'),
                         ),
-                new RaisedButton(
-                  onPressed: () {
-                    author = _authorcontroller.text;
-                    Navigator.pop(context, true);
+                        new RaisedButton(
+                          onPressed: () {
+                            author = _authorcontroller.text;
+                            Navigator.pop(context, true);
                           },
                           child: new Text('SAVE'),
                         ),
+                        new RaisedButton(
+                          onPressed: () async {
+                            String joke = await getJoke();
+                            _authorcontroller.text = joke;
+                          },
+                          child: new Text('GET JOKE'),
+                        )
                       ],
                     ),
                   ));
@@ -138,23 +148,15 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Text("set Username"));
   }
 
-  Widget renderJoke() {
-    return DefaultTextStyle(
-      style: Theme.of(context).textTheme.headline2!,
-      textAlign: TextAlign.center,
-      child: FutureBuilder<String>(
-        future: _getJoke(), // a previously-obtained Future<String> or null
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          return Text(this.joke);
-        },
-      ),
-    );
-  }
-
-  Future<String> _getJoke() async {
+  Future<String> getJoke() async {
     var response =
-        await http.get(Uri.https('jsonplaceholder.typicode.com', '/users'));
-    this.joke = response.body;
-    return response.body;
+        await http.get(Uri.https('api.chucknorris.io', '/jokes/random'));
+    print("1");
+    final body = json.decode(response.body);
+    print("X.value: " + body.toString());
+    print("2");
+    Joke joke = Joke.fromJson(body);
+    print("3");
+    return joke.value;
   }
 }
