@@ -1,5 +1,7 @@
 name: web_sockets
 description: A new Flutter project.
+assets:
+  - assets/
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -27,9 +29,10 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_js: ^0.4.0+6
   flutter:
     sdk: flutter
-  web_socket_channel: ^1.1.0
+  web_socket_channel:
   http:
   json_serializable: ^4.0.1
 
